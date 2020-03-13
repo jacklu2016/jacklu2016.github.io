@@ -16,11 +16,11 @@
     <!--<link href='http://fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'>-->
     <title>
         
-          基于内容的推荐系统 - jack的个人博客
+          推荐系统-协同过滤和矩阵因子分解 - jack的个人博客
         
     </title>
 
-    <link rel="canonical" href="https://jacklu2016.github.io/2020/03/12/基于内容的推荐系统/">
+    <link rel="canonical" href="https://jacklu2016.github.io/2020/03/12/推荐系统-协同过滤和矩阵因子分解/">
 
     <!-- Bootstrap Core CSS -->
     
@@ -112,16 +112,12 @@
                     <div class="post-heading">
                         <div class="tags">
                             
-                              <a class="tag" href="/tags/#推荐系统" title="推荐系统">推荐系统</a>
+                              <a class="tag" href="/tags/#协同过滤" title="协同过滤">协同过滤</a>
                             
-                              <a class="tag" href="/tags/#Recommendation System" title="Recommendation System">Recommendation System</a>
-                            
-                              <a class="tag" href="/tags/#基于内容" title="基于内容">基于内容</a>
-                            
-                              <a class="tag" href="/tags/#Conten Based" title="Conten Based">Conten Based</a>
+                              <a class="tag" href="/tags/#矩阵因子分解" title="矩阵因子分解">矩阵因子分解</a>
                             
                         </div>
-                        <h1>基于内容的推荐系统</h1>
+                        <h1>推荐系统-协同过滤和矩阵因子分解</h1>
                         <h2 class="subheading"></h2>
                         <span class="meta">
                             Posted by jacklu on
@@ -131,8 +127,8 @@
                         
                             <div class="blank_box"></div>
                             <span class="meta">
-                                Words <span class="post-count">874</span> and
-                                Reading Time <span class="post-count">3</span> Minutes
+                                Words <span class="post-count">1.5k</span> and
+                                Reading Time <span class="post-count">5</span> Minutes
                             </span>
                             <div class="blank_box"></div>
                             <!-- 不蒜子统计 start -->
@@ -280,25 +276,80 @@
                 col-md-10 col-md-offset-1
                 post-container">
 
-                <h1 id="Content-base-Filtering"><a href="#Content-base-Filtering" class="headerlink" title="Content-base Filtering"></a>Content-base Filtering</h1><h2 id="Basics"><a href="#Basics" class="headerlink" title="Basics"></a>Basics</h2><p>基于内容过滤通过基于用户之前的行为actions或者隐式反馈，根据物品特征推荐给用户喜爱的类似物品。为了展示基于内容的过滤，我们通过手工方式为google play商店创建一些特征。下面图表展示一个特征矩阵，每行表示一个App，每列表示一个特征。特征可以包含分类(例如教育、休闲、健康)，app的发布者以及其它的特征。简单点说，你可以认为这个特征工程是个二元的，一个非0值表示这个app有这个特征。<br><img src="matrix.png" alt="特征矩阵"><br><br>你同样使用相同的特征空间来表示用户，一些和用户相关的特征可以被用户显示的提供。例如：用户在他的档案(profile)里面选择了”娱乐APP”，其它的特征可以是隐式的，基于用户之前安装过的app。用户安装了一个Science R Us发布的其它app。<br>基于内容的模型应该推荐和用户相关的物品，为了能做到这样的推荐，你必须选择一个相似度度量（例如：点积）。然后你必须构建一个基于相似度度量的系统去为每一个推荐候选的物品打分，注意，这个推荐是特定针对这个用户的，因为这个模型没用使用任何其他用户的信息。</p>
-<h2 id="使用点积作为相似度度量"><a href="#使用点积作为相似度度量" class="headerlink" title="使用点积作为相似度度量"></a>使用点积作为相似度度量</h2><p>考虑用户embedding x和物品embedding y同时是二元向量时，因为<br>根据点积公式<img src="dotproduct.png" alt="点积公式"><br>，一个特征同时存在x和y中时，那么公式的和就会加1，换句话说，x和y的点积就是同时在x和y的向量中出现的特征的个数。一个高的点积值代表更多共同的特征，也就是更高的相似度。</p>
-<h2 id="自己试试"><a href="#自己试试" class="headerlink" title="自己试试"></a>自己试试</h2><p>根据上图计算每一个物品和用户的点积，使用计算的结果回答下面的问题：<br>你会推荐哪个app？<br>1、    Science R Us 创建的教育类的app<br>这是正确答案，这个物品和用户向量的点积最高，等于2。我们的这个用户的确喜欢科学和教育类app。<br>2、    Healthcare创建的健康类app<br>这个答案错误，这个app和用户点积值为1，这个不是系统生成的最差的推荐，但肯定不是最好的。<br>3、    TimeWastr创建的休闲app<br>这个答案错误，这个app和用户的点积值为0，我们的这个用户对游戏类的休闲app不感兴趣</p>
-<h1 id="Advantages-amp-Disadvantages"><a href="#Advantages-amp-Disadvantages" class="headerlink" title="Advantages&amp;Disadvantages"></a>Advantages&amp;Disadvantages</h1><h2 id="Advantanges"><a href="#Advantanges" class="headerlink" title="Advantanges"></a>Advantanges</h2><p>基于内容的推荐不需要其他用户的数据，因为推荐就是针对这个用户的，因此它可以很容易的扩展到更多的用户。<br>这个模型能捕获用户特定的爱好，可以推荐很少有其他用户喜好的利基(niche)物品给用户。</p>
-<h2 id="Disadvantages"><a href="#Disadvantages" class="headerlink" title="Disadvantages"></a>Disadvantages</h2><p>因为物品的特征表示某种程度上是通过手工来实现的，这个技术需要大量的专业领域知识。因此，这个模型只能很好的用于手工设计的特征。<br>这个模型只能基于用户已知的兴趣去推荐，换句话说，这个模型扩展用户已有兴趣的能力和很有限。</p>
-<p><br><br>注：本文翻译自谷歌开发者文档<br><br>链接：<a href="https://developers.google.com/machine-learning/recommendation/content-based/basics" target="_blank" rel="noopener">https://developers.google.com/machine-learning/recommendation/content-based/basics</a></p>
+                <h1 id="协同过滤"><a href="#协同过滤" class="headerlink" title="协同过滤"></a>协同过滤</h1><p>为了解决基于内容过滤的局限性，协同过滤同时使用用户之间相似和物品之间的相似来推荐。这能做到意外的推荐；因为协同过滤模型能根据和用户A类似的用户B的兴趣来给A推荐物品。此外，embeddings(怎么翻译都不好)能够被自动学习到，不依赖于手工进行特征工程。</p>
+<h2 id="一个电影推荐示例"><a href="#一个电影推荐示例" class="headerlink" title="一个电影推荐示例"></a>一个电影推荐示例</h2><p>一个电影推荐系统的训练数据集是由一个反馈矩阵组成，这个矩阵：<br></p>
+<ul>
+<li>每一行表示一个用户<br></li>
+<li>每一列表示一个物品(电影)<br><br>关于电影的反馈有两种类型</li>
+<li>显式— 用户通过一个数字评分来表示对一个特定电影的喜爱程度</li>
+<li>隐式— 如果一个用户观看了一个电影，系统推断用户对这个电影感兴趣<br><br>如果用户访问主页，系统就应该同时根据下面两点给出推荐</li>
+<li>和用户过去喜欢的电影相类似的电影</li>
+<li>和用户类似的用户喜欢的电影<br><br>为了方便解释，我们在下面的表格中为每个电影手工创建了特征<br></li>
+</ul>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">电影</th>
+<th style="text-align:right">评分</th>
+<th style="text-align:center">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">The Dark Knight Rises</td>
+<td style="text-align:right">PG-13</td>
+<td style="text-align:center">Batman endeavors to save Gotham City from nuclear annihilation in this sequel to The Dark Knight, set in the DC Comics universe.</td>
+</tr>
+<tr>
+<td style="text-align:left">Harry Potter and the Sorcerer’s Stone</td>
+<td style="text-align:right">PG</td>
+<td style="text-align:center">A orphaned boy discovers he is a wizard and enrolls in Hogwarts School of Witchcraft and Wizardry, where he wages his first battle against the evil Lord Voldemort.</td>
+</tr>
+<tr>
+<td style="text-align:left">怪物史莱克</td>
+<td style="text-align:right">PG</td>
+<td style="text-align:center">一个可爱的食人魔和他的驴伙伴出发去营救菲奥娜公主，她在她的城堡里被一条龙报复。</td>
+</tr>
+<tr>
+<td style="text-align:left">The Triplets of Belleville</td>
+<td style="text-align:right">PG-13</td>
+<td style="text-align:center">When professional cycler Champion is kidnapped during the Tour de France, his grandmother and overweight dog journey overseas to rescue him, with the help of a trio of elderly jazz singers.</td>
+</tr>
+<tr>
+<td style="text-align:left">Memento</td>
+<td style="text-align:right">R</td>
+<td style="text-align:center">An amnesiac desperately seeks to solve his wife’s murder by tattooing clues onto his body.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="1D-1维-Embdding"><a href="#1D-1维-Embdding" class="headerlink" title="1D(1维) Embdding"></a>1D(1维) Embdding</h3><p>假设我们给每个电影赋一个[-1,1]的值来描述这个电影是适合儿童(-1)还是成人(1)。同时我们给每个用户赋一个[-1,1]的值来描述这个用户是喜欢儿童电影(接近-1)还是成人电影(接近+1)。<br><img src="/2020-03-12-推荐系统-协同过滤和矩阵因子分解/20200312112459415.png" alt=""><br>下图中，绿色勾代表这个用户看过对应的电影，第3个和第4个用户的爱好能很好的通过这个特征来表示-第3个用户喜欢儿童电影，第4个用户喜欢成人电影(只是翻译，不要想歪了)。但是第1个和第2个用户的爱好不能通过这种单个特征来表示。<br><img src="/2020-03-12-推荐系统-协同过滤和矩阵因子分解/20200312112701892.png" alt=""></p>
+<h3 id="2D-2维-Embedding"><a href="#2D-2维-Embedding" class="headerlink" title="2D(2维)Embedding"></a>2D(2维)Embedding</h3><p>一个特征不足以表示所有用户的偏好。为了解决这个问题，我们增加一个特征，一个表示大片或者艺术电影的程度。有了这第二个特征，我们能使用下面的二维embedding来表示每一个电影。<br><img src="/2020-03-12-推荐系统-协同过滤和矩阵因子分解/20200313093230938.png" alt=""><br>我们同样把用户放入相同的embedding空间中来表示反馈矩阵：每一用户、物品对，我们希望当用户看了该电影时，用户embedding和物品embedding的点积接近1，没看则点积接近0。<br><img src="/2020-03-12-推荐系统-协同过滤和矩阵因子分解/20200313094133795.png" alt=""></p>
+<p><b>注意：</b>我们使用相同的embedding空间来表示用户和物品。这看起来很奇怪。毕竟用户和物品是不同的实体。但是你可以认为这个embedding空间是用户和物品的共性的一种抽象表示，这样我们就可以使用相似度量来衡量相似度或相关性。</p>
+<p>在这个例子中，我们使用手工创建的embedding。但是实际上，embedding能被自动学习，这就是协同过滤的能力。在下面2节中，我们会讨论用不同的模型来学习并训练embedding。</p>
+<p>当模型学习embeddings时，这种协同的方法是很显然的。假设电影的embedding向量是固定的，然后模型就能学习到能最佳表示用户偏好的embedding向量。因此，用户的embedding越相似表名他们更偏好更接近。同样的，如果用户的embedding向量是固定的，我们也可以学习电影的embedding来很好的表示反馈矩阵。结果就是，被相似用户喜欢的电影的embedding在embedding空间也更接近。</p>
+<h2 id="检查下你是否理解了"><a href="#检查下你是否理解了" class="headerlink" title="检查下你是否理解了"></a>检查下你是否理解了</h2><p>一个模型推荐一个购物app给用户，因为这个用户最近安装了一个类似的app。这个例子是一个什么过滤？</p>
+<ul>
+<li><p>1、基于内容的的过滤</p>
+<p>  答案正确。基于内容的的过滤不考虑其他用户。</p>
+</li>
+<li>2、协同过滤<br>  答案错误，协同过滤考虑到其他用户，这个场景中，我们只考虑了一个用户。</li>
+</ul>
+<h1 id="矩阵因子分解"><a href="#矩阵因子分解" class="headerlink" title="矩阵因子分解"></a>矩阵因子分解</h1><p>矩阵因子分解是一个简单的embedding模型。给定一个反馈矩阵<br><img src="/2020-03-12-推荐系统-协同过滤和矩阵因子分解/20200313104038917.png" alt="">,m表示用户的数量，n表示物品的数量。这个模型能学习到：</p>
+<ul>
+<li>一个用户embedding 矩阵<img src="/2020-03-12-推荐系统-协同过滤和矩阵因子分解/20200313104316183.png" alt="">，第i行表示用户i的embedding</li>
+<li>一个物品embedding矩阵<img src="/2020-03-12-推荐系统-协同过滤和矩阵因子分解/20200313104330698.png" alt="">，第j列表示物品j的embedding<br><img src="/2020-03-12-推荐系统-协同过滤和矩阵因子分解/20200313105433589.png" alt=""><br><img src="/2020-03-12-推荐系统-协同过滤和矩阵因子分解/20200313104657006.png" alt=""><br>学习到的embedding使得U和V两个矩阵的乘积能非常接近反馈矩阵A。注意到矩阵U和矩阵V乘积的每个实体(i,j)就是用户i的embedding和物品j的embedding的点积。你希望这个点积和A(i,j)更接近。<br>注意：矩阵因子化代表性的给出了一个更加简洁的表示而不是学习整个矩阵。完整的矩阵是O(m*n)个实体，而embedding矩阵U和V只有O((m+n)d)个实体，d是embedding的维度，embedding维度d是远小于m和n的。因此，矩阵因子分解能学习数据的因此结构特征，可以认为是一个低维空间的观察。在前面的例子中，m，n，d的值都非常小，这个优势可以忽略。但是在实际的推荐系统中，矩阵因子分解是比学习整个矩阵要极度简化。</li>
+</ul>
 
                 
                 <hr>
                 <!-- Pager -->
                 <ul class="pager">
                     
-                    <li class="previous">
-                        <a href="/2020/03/12/推荐系统-协同过滤和矩阵因子分解/" data-toggle="tooltip" data-placement="top" title="推荐系统-协同过滤和矩阵因子分解">&larr; Previous Post</a>
-                    </li>
-                    
                     
                     <li class="next">
-                        <a href="/2019/11/01/Hexo-Theme-Snail/" data-toggle="tooltip" data-placement="top" title="Hexo-Theme-Snail">Next Post &rarr;</a>
+                        <a href="/2020/03/12/基于内容的推荐系统/" data-toggle="tooltip" data-placement="top" title="基于内容的推荐系统">Next Post &rarr;</a>
                     </li>
                     
                 </ul>
@@ -416,7 +467,7 @@
         <div id="toc" class="toc-article">
         <strong class="toc-title">Contents</strong>
         
-          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#Content-base-Filtering"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">Content-base Filtering</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#Basics"><span class="toc-nav-number">1.1.</span> <span class="toc-nav-text">Basics</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#使用点积作为相似度度量"><span class="toc-nav-number">1.2.</span> <span class="toc-nav-text">使用点积作为相似度度量</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#自己试试"><span class="toc-nav-number">1.3.</span> <span class="toc-nav-text">自己试试</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#Advantages-amp-Disadvantages"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">Advantages&amp;Disadvantages</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#Advantanges"><span class="toc-nav-number">2.1.</span> <span class="toc-nav-text">Advantanges</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#Disadvantages"><span class="toc-nav-number">2.2.</span> <span class="toc-nav-text">Disadvantages</span></a></li></ol></li></ol>
+          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#协同过滤"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">协同过滤</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#一个电影推荐示例"><span class="toc-nav-number">1.1.</span> <span class="toc-nav-text">一个电影推荐示例</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#1D-1维-Embdding"><span class="toc-nav-number">1.1.1.</span> <span class="toc-nav-text">1D(1维) Embdding</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#2D-2维-Embedding"><span class="toc-nav-number">1.1.2.</span> <span class="toc-nav-text">2D(2维)Embedding</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#检查下你是否理解了"><span class="toc-nav-number">1.2.</span> <span class="toc-nav-text">检查下你是否理解了</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#矩阵因子分解"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">矩阵因子分解</span></a></li></ol>
         
         </div>
       </aside>
@@ -436,13 +487,9 @@
                     <h5><a href="/tags/">FEATURED TAGS</a></h5>
                     <div class="tags">
                        
-                          <a class="tag" href="/tags/#推荐系统" title="推荐系统">推荐系统</a>
+                          <a class="tag" href="/tags/#协同过滤" title="协同过滤">协同过滤</a>
                         
-                          <a class="tag" href="/tags/#Recommendation System" title="Recommendation System">Recommendation System</a>
-                        
-                          <a class="tag" href="/tags/#基于内容" title="基于内容">基于内容</a>
-                        
-                          <a class="tag" href="/tags/#Conten Based" title="Conten Based">Conten Based</a>
+                          <a class="tag" href="/tags/#矩阵因子分解" title="矩阵因子分解">矩阵因子分解</a>
                         
                     </div>
                 </section>
@@ -471,8 +518,8 @@
 <script type="text/javascript">
     /* * * CONFIGURATION VARIABLES * * */
     var disqus_shortname = "null";
-    var disqus_identifier = "https://jacklu2016.github.io/2020/03/12/%E5%9F%BA%E4%BA%8E%E5%86%85%E5%AE%B9%E7%9A%84%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F/";
-    var disqus_url = "https://jacklu2016.github.io/2020/03/12/%E5%9F%BA%E4%BA%8E%E5%86%85%E5%AE%B9%E7%9A%84%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F/";
+    var disqus_identifier = "https://jacklu2016.github.io/2020/03/12/%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%8D%8F%E5%90%8C%E8%BF%87%E6%BB%A4%E5%92%8C%E7%9F%A9%E9%98%B5%E5%9B%A0%E5%AD%90%E5%88%86%E8%A7%A3/";
+    var disqus_url = "https://jacklu2016.github.io/2020/03/12/%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F-%E5%8D%8F%E5%90%8C%E8%BF%87%E6%BB%A4%E5%92%8C%E7%9F%A9%E9%98%B5%E5%9B%A0%E5%AD%90%E5%88%86%E8%A7%A3/";
 
     (function() {
         var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
