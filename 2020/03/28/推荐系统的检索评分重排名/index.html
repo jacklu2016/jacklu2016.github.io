@@ -16,11 +16,11 @@
     <!--<link href='http://fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'>-->
     <title>
         
-          深度神经网络推荐系统 - jack的个人博客
+          推荐系统的检索评分重排名 - jack的个人博客
         
     </title>
 
-    <link rel="canonical" href="https://jacklu2016.github.io/2020/03/28/深度神经网络推荐系统/">
+    <link rel="canonical" href="https://jacklu2016.github.io/2020/03/28/推荐系统的检索评分重排名/">
 
     <!-- Bootstrap Core CSS -->
     
@@ -114,10 +114,8 @@
                             
                               <a class="tag" href="/tags/#推荐系统" title="推荐系统">推荐系统</a>
                             
-                              <a class="tag" href="/tags/#深度神经网络" title="深度神经网络">深度神经网络</a>
-                            
                         </div>
-                        <h1>深度神经网络推荐系统</h1>
+                        <h1>推荐系统的检索评分重排名</h1>
                         <h2 class="subheading"></h2>
                         <span class="meta">
                             Posted by Jack Lu on
@@ -127,8 +125,8 @@
                         
                             <div class="blank_box"></div>
                             <span class="meta">
-                                Words <span class="post-count">2.7k</span> and
-                                Reading Time <span class="post-count">9</span> Minutes
+                                Words <span class="post-count">2.2k</span> and
+                                Reading Time <span class="post-count">7</span> Minutes
                             </span>
                             <div class="blank_box"></div>
                             <!-- 不蒜子统计 start -->
@@ -276,106 +274,88 @@
                 col-md-10 col-md-offset-1
                 post-container">
 
-                <h1 id="深度神经网络推荐模型"><a href="#深度神经网络推荐模型" class="headerlink" title="深度神经网络推荐模型"></a>深度神经网络推荐模型</h1><p>上一篇文章已向你展示了使用矩阵因子分解来学习embeddings。矩阵因子分解的局限性：</p>
+                <h1 id="检索"><a href="#检索" class="headerlink" title="检索"></a>检索</h1><p><b>假设你有一个embeding模型，给定一个用户，你怎么决定推荐哪一个物品给他？</b></p>
+<p>在服务时，给定一个query，你会开始做下面的一种</p>
 <ul>
-<li>很难使用边缘特征(side feature，就是query id和item id之外的特征)。这个模型只能根据训练数据集中的用户或物品进行推荐。</li>
-<li>推荐的相关性。在矩阵因子分解的<a href="https://developers.google.com/machine-learning/recommendation/labs/movie-rec-programming-exercise" target="_blank" rel="noopener">实验</a>中，模型会给每个人推荐流行的物品，特别是使用点积作为相似度量。但是模型应该最好是能捕捉用户的兴趣。</li>
+<li>如果是一个矩阵因子分解模型，query或者user的embedding是固定知道的，系统可以很轻易的在user embedding矩阵中检索到。</li>
+<li>如果是一个深度神经网络模型，系统需要在服务时，对特征向量x运行神经网络来计算query embedding φ(x)</li>
 </ul>
-<p>深度神经网络能很好的避免矩阵因子分解的这些局限性。深度神经网络能很轻松的合并用户特征和物品特征(因为神经网络输入层的灵活性)，这就能帮助发现用户的兴趣，进而提高推荐的相关性。</p>
-<h2 id="Softmax深度神经网络的推荐"><a href="#Softmax深度神经网络的推荐" class="headerlink" title="Softmax深度神经网络的推荐"></a>Softmax深度神经网络的推荐</h2><p>一个可行的深度神经网络模型是<a href="https://developers.google.com/machine-learning/glossary#softmax" target="_blank" rel="noopener">softmax</a>(softmax是一个函数，这个函数能在多类型分类模型中，预测每一个类型的可能性)<br>这个模型把推荐的问题当做一个多分类预测的问题：</p>
+<p>一旦你有了query embedding q,你就可以在embedding空间中查找和q接近的物品embedding V(j)。这是一个最近邻的问题，例如，你能根据相似度评分s(q,V(j))来返回top k个物品。<br><img src="20200328054448583.png" alt=""><br>你也可以使用相同方法来得到关联物品的推荐。例如，当用户在youtube上观看一个视频，系统首先查找这个视频的embedding，然后在embedding 空间中查找跟这个embedding接近的物品的embeddings。<br>为了在embedding空间中计算最近的邻居，系统可以穷尽的计算每一个潜在候选者的评分。但是在大型组织中穷尽计算的代价比较高，你可以使用下面策略中的一种使得模型计算更高效</p>
 <ul>
-<li>输入是一个用户</li>
-<li>输出是一个可能性的向量，这个向量的长度是企业内所有物品的数量，这个向量就表示每种物品的可能性，例如，点击或观看youtube视频的可能性。<h3 id="输入"><a href="#输入" class="headerlink" title="输入"></a>输入</h3>深度神经网络的输入能包含：</li>
-<li>稠密特征(例如，观看时间和自上次观看以来的时间)</li>
-<li>稀疏特征(例如，观看历史和国家)</li>
+<li>如果query embedding是固定的，系统可以线下执行穷尽评分，预先计算并为每一个query保存一个top的候选者列表。这是相关物品推荐中常用的方法。</li>
+<li>使用近似近邻(approximate nearest neighbors)</li>
 </ul>
-<p>不像矩阵因子分解模型，这个模型你能增加像年龄、国家这样的边缘特征。我们把输入的向量定义为x<br><img src="20200328110332448.png" alt=""></p>
-<h3 id="模型架构"><a href="#模型架构" class="headerlink" title="模型架构"></a>模型架构</h3><p>模型的架构决定了模型的复杂性和可表达性。通过增加隐藏层和非线性的激活函数(例如Relu)，模型能捕捉数据中更加复杂的关系。但是增加参数的数量会使得模型更难训练而且使用模型的成本更高。我们把最后一个隐藏层的输出定义为<img src="20200328110850384.png" alt=""><br><img src="20200328110915151.png" alt=""></p>
-<h3 id="Softmax输出，预测分布的可能性"><a href="#Softmax输出，预测分布的可能性" class="headerlink" title="Softmax输出，预测分布的可能性"></a>Softmax输出，预测分布的可能性</h3><p><img src="20200328111117934.png" alt=""><br>模型通过一个softmax层把最后一层的输出φ(x)映射为分布的可能性，其中</p>
+<h1 id="评分"><a href="#评分" class="headerlink" title="评分"></a>评分</h1><p>在生产候选者后，另一个模型就会对选取到的一组候选物品进行评分、排名然后展示。推荐系统可能有不同来源的多个候选者生成器，如下：</p>
 <ul>
-<li>h是softmax函数</li>
-<li>V(n*d)是softmax层的权重矩阵<br>softmax层把评分的向量y(有时也被称为<a href="https://developers.google.com/machine-learning/glossary/#logits" target="_blank" rel="noopener">logits</a>)映射为分布的可能性。<br><img src="20200328111944223.png" alt=""><h4 id="你知道吗？"><a href="#你知道吗？" class="headerlink" title="你知道吗？"></a>你知道吗？</h4>softmax是取一个词语的诙谐表示，一个”硬”最大是把物品得分最高的y(i)赋值为可能性1，相反，这个”软”最大是为所有物品分配一个非0的可能性，物品拥有更高的分数就代表更高的可能性。如果这个分数放大，softmax函数把硬最大收敛为无穷大。<h3 id="损失函数"><a href="#损失函数" class="headerlink" title="损失函数"></a>损失函数</h3>最后，我们定义个损失函数来比较以下两项：</li>
-<li>p^，softmax层的输出(分布的可能性) </li>
-<li>p，真实值，表示这个用户和这个物品的交互（例如，youtube上面用户观看或点击的视频）。这能通过一个multi-hot分布(可能性的向量)来表示。<br><img src="20200328113425962.png" alt=""><h3 id="Softmax-Embeddings"><a href="#Softmax-Embeddings" class="headerlink" title="Softmax Embeddings"></a>Softmax Embeddings</h3><img src="20200328113743036.png" alt=""><br>物品j的可能性通过如上公式计算得出，Z是一个标准化使用的常量，它不依赖于j。换句话说，log(p^j)一个物品的可能性的log值是两个d维向量的点击，这两个d维的向量也可以表示为用户和物品的embeddings</li>
-<li>φ(x)∈R(D)是最后一个隐藏层的输出，我们把它省委query x的embedding</li>
-<li>V(j)∈R(d)是连接最后一个隐藏层到输出j的权重向量，我们把它称为物品j的embedding。<h4 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h4>因为log是一个增函数，拥有最高可能性p^(j)的物品j就是最大点积&lt;φ(x),V(j)&gt;的物品。因此，在这个embedding空间中，点积也可以解释为相似度量。<br><img src="20200328114812895.png" alt=""><h2 id="深度神经网络和矩阵因子分解"><a href="#深度神经网络和矩阵因子分解" class="headerlink" title="深度神经网络和矩阵因子分解"></a>深度神经网络和矩阵因子分解</h2>在softmax模型和矩阵因子分解模型中，系统为每一个item j都学习到一个embedding向量V(j)，矩阵因子分解模型中的物品embedding矩阵V∈R(n*d)在深度神经网络中是<br>softmax层的权重矩阵。</li>
+<li>来自矩阵因子分解的相关物品</li>
+<li>解释个性的用户特征</li>
+<li>“本地” vs “遥远”的物品，要考虑地理位置信息</li>
+<li>流行或趋势好的物品</li>
+<li>一个社交网络图，朋友喜欢的或推荐的物品</li>
 </ul>
-<p>query embedding则是不同的。深度神经网络没有为每个query i学习一个embedding U(i)，而是学习了一个query特征x到embedding φ(x)∈R(d)的映射。因此可以认为深度神经网络模型是一个更加一般化的矩阵因子分解，这个模型把query替换为一个非线性的函数φ(.)。</p>
-<h2 id="你能使用物品的特征吗？"><a href="#你能使用物品的特征吗？" class="headerlink" title="你能使用物品的特征吗？"></a>你能使用物品的特征吗？</h2><p>我们能在物品上应用相同的思想吗？就是说这个模型不为每个物品学习一个embedding，而是学习一个非线性函数，这个函数把物品特征映射为一个embedding？答案是有。我们使用一个双塔(two-tower)神经网络，它由两个神经网络组成<br><img src="20200328025943254.png" alt=""></p>
+<p>系统把不同来源的合并为一个通用的候选者物品池，然后用一个模型来对池中的物品进行评分，然后根据评分进行排名。例如，只要给定下面两个信息，系统就可以训练一个模型来预测youtube上一个用户观看一个视频的可能性，这2个信息是：</p>
 <ul>
-<li>一个神经网络把query 特征映射为query embedding</li>
-<li>一个神经网络把item特征映射为item embedding<br>模型的输出可以定义为query embedding和item embedding的点积。注意,这不再是一个softmax模型。这个模型为每一query和item对预测一个值，而不是为query预测一个可能性向量。</li>
+<li>query特征（例如，用户观看历史，语言。国家，时间）</li>
+<li>视频特征(例如，标题、标签、视频embedding)</li>
 </ul>
-<h1 id="Softmax-Training"><a href="#Softmax-Training" class="headerlink" title="Softmax Training"></a>Softmax Training</h1><p>上一节介绍了怎么在一个推荐系统的深度神经网络中使用softmax层。这节我们来仔细看看这个系统的训练数据。</p>
-<h2 id="训练数据"><a href="#训练数据" class="headerlink" title="训练数据"></a>训练数据</h2><p>softmax训练数据由query特征x以及和用户交互的物品向量（表示为可能性分布p）。在下图中他们被标记为蓝色。这个模型中的变量是不同层的权重，他们在下图中被标记为橙色。这个模型能使用任何类型的随机梯度下降的方法训练。<br><img src="20200328031029330.png" alt=""></p>
-<h2 id="negative-sampling"><a href="#negative-sampling" class="headerlink" title="negative sampling"></a>negative sampling</h2><p>因为损失函数是比较两个可能性数组p,p^(x)∈R(n)（他们分别是真实值和模型的输出）。当n非常大的情况下，为一个query x计算梯度损失x的代价是非常高的。</p>
-<p>我们当然可以建立一个系统只计算那些正向物品(positive item，在向量中处于活动的物品，跟用户有交互的物品)的梯度。但是，如果系统只计算positive物品，那么系统就会遭遇折叠的困境，什么是折叠的困境：<br><img src="20200328032454658.png" alt=""><br>在上图中，我们假设不同的颜色代表不同种类的query和item。每个query(表示为方形)最可能和同种颜色的item(表示为圆形)交互。例如，我们假设分类就是youbute中不同的语言，一个特定的用户只会和这个特定语言的视频交互。<br>这个模型能学习到在同一个颜色中如何摆放相互之间有关系的query或item。(能正确捕捉到同一颜色内的相似性)，但是来自不同颜色的embedding可能最后被放入同一个embedding空间的区域中。这种现象被称为折叠，会导致假的推荐：就是在一个query时刻，模型会错误的推荐一个其它组中的高分item。<br>反向例子(negative examples)就是和一个给定的query不相关的item。在模型训练时输入一些反向的例子能使模型学习到来自不同组的embedding会彼此互相分离开。<br>我们不是对所有的物品都计算梯度(这样代价太大)，也不是只对正向样本计算梯度(这会导致模型折叠)，你可以使用负向样本抽样(negative sampling)。更准确的说，我们只对下面的物品计算对应的梯度：</p>
+<p>系统就能根据模型预测的候选者池中的视频进行排名。</p>
+<h2 id="为什么不让候选者生成器来评分"><a href="#为什么不让候选者生成器来评分" class="headerlink" title="为什么不让候选者生成器来评分"></a>为什么不让候选者生成器来评分</h2><p>虽然候选者生成器计算了一个评分(例如在embedding空间中计算相似度量)，你可以临时的使用这个评分来进行排序。但是，实践中，你应该避免这么做，因为：</p>
 <ul>
-<li>所有正面的item，(被标记为1的物品)</li>
-<li>负面item的抽样(j in 1,…,n)<br>这里有不同的负面抽样策略</li>
-<li>一致性抽样</li>
-<li>你可以给有更高分数的φ(x).V(j)对应的物品j更大的可能性，直觉的认为，这些是在梯度中贡献更大的一组物品，这些物品通常被称为硬反面(hard negative)。</li>
-<li><h3 id="额外的资源"><a href="#额外的资源" class="headerlink" title="额外的资源:"></a>额外的资源:</h3>为了更好的理解这个技术、架构和youtube中使用的模型，<br>查看<a href="https://research.google.com/pubs/pub45530.html" target="_blank" rel="noopener">Neural Networks for YouTube Recommendations</a></li>
+<li>一些系统依赖于多个候选者生成器，可能不同生成器的评分是不可比较的。</li>
+<li>在一个小的候选者池中，系统可以提供更多的特征和更复杂的模型来更好的捕捉上下文</li>
 </ul>
-<p>了解折叠的更多细节看<br><a href="https://dl.acm.org/citation.cfm?id=3109911" target="_blank" rel="noopener">Xin et al., Folding: Why Good Models Sometimes Make Spurious Recommendations</a> </p>
-<p>学习更多关于负面抽样，看<a href="https://ieeexplore.ieee.org/document/4443871/" target="_blank" rel="noopener">Bengio and Senecal, Adaptive Importance Sampling to Accelerate Training of a Neural Probabilistic Language Model</a></p>
-<h1 id="矩阵因子分解-Vs-Softmax"><a href="#矩阵因子分解-Vs-Softmax" class="headerlink" title="矩阵因子分解 Vs Softmax"></a>矩阵因子分解 Vs Softmax</h1><p>Softmax能避免矩阵因子分解中很多的局限性，但是也更难以训练和查询。下面表格总结了两种模型重要的区别</p>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th></th>
-<th>矩阵因子分解</th>
-<th>深度神经网络Softmax</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>查询特征</td>
-<td><font color=red>不容易包含</font></td>
-<td><font color=green>能被包含</font></td>
-</tr>
-<tr>
-<td>冷启动</td>
-<td><font color=red>不能方面处理训练集之外的query和物品。<br>一些启发式的方法可以使用(例如：对于一个新的query，可以取相似query embedding的均值)</font></td>
-<td><font color=green>处理新query很简单</font></td>
-</tr>
-<tr>
-<td>折叠</td>
-<td><font color=green>通过把未观察的权重放入WALS中轻易解决折叠的问题</font></td>
-<td><font color=red>证明会发生折叠，可以使用反面抽样或Gravity的技术</font></td>
-</tr>
-<tr>
-<td>训练扩展</td>
-<td><font color=green>轻易扩展到大型组织(上亿级的物品甚至更多)<br>仅限输入是稀疏的矩阵</font></td>
-<td><font color=red>很难扩展到大型组织。也可以使用一些技术，如：哈希、反面抽样等</font></td>
-</tr>
-<tr>
-<td>服务应用扩展</td>
-<td><font color=green>U、V的embedding是固定的，可以预计算一组候选者并保存</font></td>
-<td><font color=green>物品embeding V是固定的。</font><br><font color=red>query的embedding需要在查询时计算，使得模型服务应用的代价更高</font></td>
-</tr>
-</tbody>
-</table>
-</div>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ul>
-<li>矩阵因子分解是大公司更好的选择，它能轻易的扩展，查询代价低，不会产生折叠。</li>
-<li>深度神经网络能更好捕捉兴趣，但是更难训练和query代价高。如果是为了评分，那么优先使用深度神经网络而不是矩阵因子分解。因为深度神经网络模型能使用更多的特征来更好的捕捉相关性。同时，通常深度神经网络模型产生的折叠是可以被接受的，因为你更关注那些被认为是预先过滤的一组相关的候选者的排名。</li>
+<h2 id="给评分选择一个目标函数"><a href="#给评分选择一个目标函数" class="headerlink" title="给评分选择一个目标函数"></a>给评分选择一个目标函数</h2><p>你也许会记得<a href="https://developers.google.com/machine-learning/problem-framing/" target="_blank" rel="noopener">机器学习问题的介绍</a>,机器学习能扮演为一个淘气的精灵：很乐意去学习你提供的目标，但是你得非常小心你的期望。这个淘气的特性也同样应用于推荐系统，评分函数的选择能极大的影响物品的排名，最后影响推荐系统的质量。</p>
+<p><b>例如，使用不同的目标带来不同的结果：</b></p>
+<h3 id="最大化点击率"><a href="#最大化点击率" class="headerlink" title="最大化点击率"></a>最大化点击率</h3><p>如果一个评分函数为了优化点击，系统就会推荐点击诱饵的视频，这个评分函数能带来点击，但是没有带来一个好的用户体检。用户的性能会衰减很快。</p>
+<h3 id="最大化观看时间"><a href="#最大化观看时间" class="headerlink" title="最大化观看时间"></a>最大化观看时间</h3><p>如果评分函数是为了优化观看时间，系统可能会推荐时间很长的视频，这也会导致一个不好的用户体检。注意很多短的视频和那些长的视频一样好。</p>
+<h3 id="增加多样性并最大化会话观看时间"><a href="#增加多样性并最大化会话观看时间" class="headerlink" title="增加多样性并最大化会话观看时间"></a>增加多样性并最大化会话观看时间</h3><p>推荐更短的视频，但是这些视频能让用户保持被吸引。</p>
+<h2 id="评分中的位置偏差"><a href="#评分中的位置偏差" class="headerlink" title="评分中的位置偏差"></a>评分中的位置偏差</h2><p><img src="20200328063925371.png" alt=""><br>出现在屏幕下方的物品比出现在屏幕上方的物品的点击率要低。通常系统在对物品进行评分时不知道物品会出现在屏幕的什么位置。但是在模型中查询所有位置的代价又太大。假使对多个位置查询是可行的，系统也很难在跨多评分排名中找到一致性的排名。</p>
+<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><ul>
+<li>生成位置独立的排名</li>
+<li>把所有的候选物品看做是在第一个位置来进行排名</li>
 </ul>
-<p>本文翻译自谷歌开发者<a href="https://developers.google.com/machine-learning/recommendation/dnn/softmax" target="_blank" rel="noopener">使用深度神经网络推荐</a></p>
+<h1 id="重排名"><a href="#重排名" class="headerlink" title="重排名"></a>重排名</h1><p>在推荐系统的最后阶段，系统能考虑到额外的条件和约束对候选物品进行重排序。一个重排名的方法是通过过滤来删除一些候选物品。<br>例如：你能通过一下操作来实现视频推荐上的重排名</p>
+<ul>
+<li>你可以训练单独的模型来检查一个视频是否是点击诱饵</li>
+<li>在候选物品列表上执行这个模型</li>
+<li>删除模型分类为点击诱饵的视频</li>
+</ul>
+<p>另一个重排名方法是对排名器返回的评分进行手动转换<br>例如：通过下面的函数改变评分来对视频重排名</p>
+<ul>
+<li>视频年龄(可能提升新鲜的内容)</li>
+<li>视频长度</li>
+</ul>
+<p>这个部分我们简要的介绍新鲜度、多样性、公平性。这些因子能帮助改善你的推荐系统。这其中的因子需要修改处理过程中的不同阶段。下面每个部分提供了你可以单独或组合使用的解决办法。</p>
+<h2 id="新鲜度"><a href="#新鲜度" class="headerlink" title="新鲜度"></a>新鲜度</h2><p>很多推荐系统都会使用当前用户的历史、最新的物品这些最新的可用信息。保持模型的新鲜度来帮助模型做出更好的推荐。</p>
+<h3 id="解决方案Solutions"><a href="#解决方案Solutions" class="headerlink" title="解决方案Solutions"></a>解决方案Solutions</h3><ul>
+<li>尽可能的经常在最新的训练数据上重新训练模型，我们推荐热启动来训练，这样就能避免模型胡乱的全部重新学习。热启动能显著的减少训练时间。例如，在矩阵因子分解中，热启动那些在上一个模型实例中已存在的物品embeddings。</li>
+<li>在矩阵因子分解模型中创建一个“平均”用户来代表新用户。你不需要每个用户相同的embedding，只需要基于用户的特征来创建用户集群。</li>
+<li>使用softmax深度神经网络或双塔神经网络，因为模型使用特征向量作为输入，所以它也能运行一个在训练时没有出现过的query或者item。</li>
+<li>增加文档年龄这一个特征。例如，youtube能把视频的年龄和上一次观看的时间当做特征增加到模型中。</li>
+</ul>
+<h2 id="多样性"><a href="#多样性" class="headerlink" title="多样性"></a>多样性</h2><p><img src="20200328084108597.png" alt=""><br>如果系统总是推荐和query embedding最接近的视频，候选物品之间会非常相似。这种缺乏多样性会导致坏的或令人厌烦的用户体检。例如，如果youtube只推荐和用户当前观看的视频相类似的视频，除了猫头鹰视频没有其它的了（就像上图展示的那样），用户很快就会失去兴趣。</p>
+<h3 id="解决方案-1"><a href="#解决方案-1" class="headerlink" title="解决方案"></a>解决方案</h3><ul>
+<li>使用不同的来源训练多个候选生成器</li>
+<li>使用不同的目标函数训练多个排名</li>
+<li>基于分类或其它元数据重新对物品排名来确保多样性</li>
+</ul>
+<h2 id="公平性"><a href="#公平性" class="headerlink" title="公平性"></a>公平性</h2><p>你的模型应该平等的对待所有的用户。因此，确保你的模型不会从训练数据集中学习到非有意识的偏见。</p>
+<h3 id="解决方案-2"><a href="#解决方案-2" class="headerlink" title="解决方案"></a>解决方案</h3><ul>
+<li>在设计和开发时包含多个方面特征</li>
+<li>在全面的数据集上训练机器学习模型。当你的数据很稀疏时增加辅助的数据(例如，当特定的类型人数不足时)。</li>
+<li>对每一个人口统计类型上跟踪度量(例如准确性和绝对误差)来观察偏差(biase)。</li>
+<li>为服务不周到的群体使用单独的模型。</li>
+</ul>
+<p>本文翻译自谷歌开发者<a href="https://developers.google.com/machine-learning/recommendation/dnn/retrieval" target="_blank" rel="noopener">推荐系统的检索评分重排名</a></p>
 
                 
                 <hr>
                 <!-- Pager -->
                 <ul class="pager">
                     
-                    <li class="previous">
-                        <a href="/2020/03/28/推荐系统的检索评分重排名/" data-toggle="tooltip" data-placement="top" title="推荐系统的检索评分重排名">&larr; Previous Post</a>
-                    </li>
-                    
                     
                     <li class="next">
-                        <a href="/2020/03/12/推荐系统-协同过滤和矩阵因子分解/" data-toggle="tooltip" data-placement="top" title="推荐系统-协同过滤和矩阵因子分解">Next Post &rarr;</a>
+                        <a href="/2020/03/28/深度神经网络推荐系统/" data-toggle="tooltip" data-placement="top" title="深度神经网络推荐系统">Next Post &rarr;</a>
                     </li>
                     
                 </ul>
@@ -493,7 +473,7 @@
         <div id="toc" class="toc-article">
         <strong class="toc-title">Contents</strong>
         
-          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#深度神经网络推荐模型"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">深度神经网络推荐模型</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#Softmax深度神经网络的推荐"><span class="toc-nav-number">1.1.</span> <span class="toc-nav-text">Softmax深度神经网络的推荐</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#输入"><span class="toc-nav-number">1.1.1.</span> <span class="toc-nav-text">输入</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#模型架构"><span class="toc-nav-number">1.1.2.</span> <span class="toc-nav-text">模型架构</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#Softmax输出，预测分布的可能性"><span class="toc-nav-number">1.1.3.</span> <span class="toc-nav-text">Softmax输出，预测分布的可能性</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#你知道吗？"><span class="toc-nav-number">1.1.3.1.</span> <span class="toc-nav-text">你知道吗？</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#损失函数"><span class="toc-nav-number">1.1.4.</span> <span class="toc-nav-text">损失函数</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#Softmax-Embeddings"><span class="toc-nav-number">1.1.5.</span> <span class="toc-nav-text">Softmax Embeddings</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#注意"><span class="toc-nav-number">1.1.5.1.</span> <span class="toc-nav-text">注意</span></a></li></ol></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#深度神经网络和矩阵因子分解"><span class="toc-nav-number">1.2.</span> <span class="toc-nav-text">深度神经网络和矩阵因子分解</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#你能使用物品的特征吗？"><span class="toc-nav-number">1.3.</span> <span class="toc-nav-text">你能使用物品的特征吗？</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#Softmax-Training"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">Softmax Training</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#训练数据"><span class="toc-nav-number">2.1.</span> <span class="toc-nav-text">训练数据</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#negative-sampling"><span class="toc-nav-number">2.2.</span> <span class="toc-nav-text">negative sampling</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#额外的资源"><span class="toc-nav-number">2.2.1.</span> <span class="toc-nav-text">额外的资源:</span></a></li></ol></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#矩阵因子分解-Vs-Softmax"><span class="toc-nav-number">3.</span> <span class="toc-nav-text">矩阵因子分解 Vs Softmax</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#总结"><span class="toc-nav-number">3.1.</span> <span class="toc-nav-text">总结</span></a></li></ol></li></ol>
+          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#检索"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">检索</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#评分"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">评分</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#为什么不让候选者生成器来评分"><span class="toc-nav-number">2.1.</span> <span class="toc-nav-text">为什么不让候选者生成器来评分</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#给评分选择一个目标函数"><span class="toc-nav-number">2.2.</span> <span class="toc-nav-text">给评分选择一个目标函数</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#最大化点击率"><span class="toc-nav-number">2.2.1.</span> <span class="toc-nav-text">最大化点击率</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#最大化观看时间"><span class="toc-nav-number">2.2.2.</span> <span class="toc-nav-text">最大化观看时间</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#增加多样性并最大化会话观看时间"><span class="toc-nav-number">2.2.3.</span> <span class="toc-nav-text">增加多样性并最大化会话观看时间</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#评分中的位置偏差"><span class="toc-nav-number">2.3.</span> <span class="toc-nav-text">评分中的位置偏差</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#解决方案"><span class="toc-nav-number">2.3.1.</span> <span class="toc-nav-text">解决方案</span></a></li></ol></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#重排名"><span class="toc-nav-number">3.</span> <span class="toc-nav-text">重排名</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#新鲜度"><span class="toc-nav-number">3.1.</span> <span class="toc-nav-text">新鲜度</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#解决方案Solutions"><span class="toc-nav-number">3.1.1.</span> <span class="toc-nav-text">解决方案Solutions</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#多样性"><span class="toc-nav-number">3.2.</span> <span class="toc-nav-text">多样性</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#解决方案-1"><span class="toc-nav-number">3.2.1.</span> <span class="toc-nav-text">解决方案</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#公平性"><span class="toc-nav-number">3.3.</span> <span class="toc-nav-text">公平性</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#解决方案-2"><span class="toc-nav-number">3.3.1.</span> <span class="toc-nav-text">解决方案</span></a></li></ol></li></ol></li></ol>
         
         </div>
       </aside>
@@ -514,8 +494,6 @@
                     <div class="tags">
                        
                           <a class="tag" href="/tags/#推荐系统" title="推荐系统">推荐系统</a>
-                        
-                          <a class="tag" href="/tags/#深度神经网络" title="深度神经网络">深度神经网络</a>
                         
                     </div>
                 </section>
@@ -544,8 +522,8 @@
 <script type="text/javascript">
     /* * * CONFIGURATION VARIABLES * * */
     var disqus_shortname = "null";
-    var disqus_identifier = "https://jacklu2016.github.io/2020/03/28/%E6%B7%B1%E5%BA%A6%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F/";
-    var disqus_url = "https://jacklu2016.github.io/2020/03/28/%E6%B7%B1%E5%BA%A6%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F/";
+    var disqus_identifier = "https://jacklu2016.github.io/2020/03/28/%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F%E7%9A%84%E6%A3%80%E7%B4%A2%E8%AF%84%E5%88%86%E9%87%8D%E6%8E%92%E5%90%8D/";
+    var disqus_url = "https://jacklu2016.github.io/2020/03/28/%E6%8E%A8%E8%8D%90%E7%B3%BB%E7%BB%9F%E7%9A%84%E6%A3%80%E7%B4%A2%E8%AF%84%E5%88%86%E9%87%8D%E6%8E%92%E5%90%8D/";
 
     (function() {
         var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
